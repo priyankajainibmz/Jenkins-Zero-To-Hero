@@ -45,7 +45,7 @@ pipeline {
       steps {
         script {
           // Pull the public image from the 'abhishekf5' repository
-          sh 'docker pull abhishekf5/ultimate-cicd:3'
+          sh 'docker pull abhishekf5/ultimate-cicd:1'
         }
       }
     }
@@ -53,7 +53,7 @@ pipeline {
       steps {
         script {
           // Tag the image with your own Docker Hub account and repository
-          sh 'docker tag abhishekf5/ultimate-cicd:3 priyankajainibmz/ultimate-cicd:3'
+          sh 'docker tag abhishekf5/ultimate-cicd:1 priyankajainibmz/ultimate-cicd:1'
         }
       }
     }
@@ -61,7 +61,7 @@ pipeline {
       steps {
         script {
           // Push the tagged image to your Docker Hub repository
-          sh 'docker push priyankajainibmz/ultimate-cicd:3'
+          sh 'docker push priyankajainibmz/ultimate-cicd:1'
         }
       }
     }
