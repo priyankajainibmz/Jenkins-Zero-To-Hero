@@ -9,7 +9,8 @@ pipeline {
     stage('Checkout') {
       steps {
         sh 'echo passed'
-        //git branch: 'main', url: 'https://github.com/priyankajainibmz/Jenkins-Zero-To-Hero.git'
+        // Uncomment this when needed
+        // git branch: 'main', url: 'https://github.com/priyankajainibmz/Jenkins-Zero-To-Hero.git'
       }
     }
     stage('Build and Test') {
@@ -29,61 +30,59 @@ pipeline {
         }
       }
     }
-    stages {
-        stage('Login to Docker Hub') {
-            steps {
-                script {
-                    // Authenticate to Docker Hub using Jenkins credentials
-                    withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS, usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        // Perform docker login using provided credentials
-                        sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
-                    }
-                }
-            }
+    stage('Login to Docker Hub') {
+      steps {
+        script {
+          // Authenticate to Docker Hub using Jenkins credentials
+          withCredentials([usernamePassword(credentialsId: 'docker-hub-creds-priyanka', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+            // Perform docker login using provided credentials
+            sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
+          }
         }
-        stage('Pull Docker Image') {
-            steps {
-                script {
-                    // Pull the public image from the 'abhishekf5' repository
-                    sh 'docker pull abhishekf5/ultimate-cicd:3'
-                }
-            }
+      }
+    }
+    stage('Pull Docker Image') {
+      steps {
+        script {
+          // Pull the public image from the 'abhishekf5' repository
+          sh 'docker pull abhishekf5/ultimate-cicd:3'
         }
-        stage('Tag Docker Image') {
-            steps {
-                script {
-                    // Tag the image with your own Docker Hub account and repository
-                    sh 'docker tag abhishekf5/ultimate-cicd:3 priyankajainibmz/ultimate-cicd:3'
-                }
-            }
+      }
+    }
+    stage('Tag Docker Image') {
+      steps {
+        script {
+          // Tag the image with your own Docker Hub account and repository
+          sh 'docker tag abhishekf5/ultimate-cicd:3 priyankajainibmz/ultimate-cicd:3'
         }
-        stage('Push Docker Image') {
-            steps {
-                script {
-                    // Push the tagged image to your Docker Hub repository
-                    sh 'docker push priyankajainibmz/ultimate-cicd:3'
-                }
-            }
+      }
+    }
+    stage('Push Docker Image') {
+      steps {
+        script {
+          // Push the tagged image to your Docker Hub repository
+          sh 'docker push priyankajainibmz/ultimate-cicd:3'
         }
+      }
+    }
     stage('Update Deployment File') {
-        environment {
-            GIT_REPO_NAME = "Jenkins-Zero-To-Hero"
-            GIT_USER_NAME = "priyankajainibmz"
+      environment {
+        GIT_REPO_NAME = "Jenkins-Zero-To-Hero"
+        GIT_USER_NAME = "priyankajainibmz"
+      }
+      steps {
+        withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
+          sh '''
+            git config user.email "priyankajainibmz@gmail.com"
+            git config user.name "Priyanka Jain"
+            BUILD_NUMBER=${BUILD_NUMBER}
+            sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
+            git add java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
+            git commit -m "Update deployment image to version ${BUILD_NUMBER}"
+            git push https://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@github.com/priyankajainibmz/Jenkins-Zero-To-Hero HEAD:main
+          '''
         }
-        steps {
-            withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
-                sh '''
-                    git config user.email "priyankajainibmz@gmail.com"
-                    git config user.name "Priyanka Jain"
-                    BUILD_NUMBER=${BUILD_NUMBER}
-                    sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
-                    git add java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
-                    git commit -m "Update deployment image to version ${BUILD_NUMBER}"
-                    git push https://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@github.com/priyankajainibmz/Jenkins-Zero-To-Hero HEAD:main
-                '''
-            }
-        }
+      }
     }
   }
-}
 }
