@@ -10,7 +10,7 @@ pipeline {
       steps {
         sh 'echo passed'
         // Uncomment this when needed
-        // git branch: 'main', url: 'https://github.com/priyankajainibmz/Jenkins-Zero-To-Hero.git'
+         git branch: 'main', url: 'https://github.com/priyankajainibmz/Jenkins-Zero-To-Hero.git'
       }
     }
     stage('Build and Test') {
@@ -80,7 +80,6 @@ pipeline {
             git add java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
             git commit -m "Update deployment image to version ${BUILD_NUMBER}"
             git push https://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@github.com/priyankajainibmz/Jenkins-Zero-To-Hero.git HEAD:main
-
           '''
         }
       }
